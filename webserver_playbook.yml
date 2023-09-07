@@ -1,0 +1,31 @@
+---
+- name: Install and configure web server
+  hosts: webservers
+  become: yes
+  tasks:
+    - name: Install httpd (Apache)
+      yum:
+        name: httpd
+        state: present
+
+    - name: Enable and Start httpd
+      systemd:
+        name: httpd
+        enabled: yes
+        state: started
+
+    - name: Deploy custom web page
+      copy:
+        content: "Hello World from SJSU-{{ sjsu_id }}"
+        dest: /var/www/html/index.html
+
+    - name: Update httpd port to 8080
+      replace:
+        path: /etc/httpd/conf/httpd.conf
+        regexp: 'Listen\s+\d+'
+        replace: 'Listen 8080'
+
+    - name: Restart httpd
+      systemd:
+        name: httpd
+        state: restarted
